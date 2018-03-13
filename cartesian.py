@@ -55,7 +55,7 @@ class cartesian(object):
         sig.PWM1 = self.kp*e1 + self.ki*self.int1
         sig.PWM2 = self.kp*e2 + self.ki*self.int2
 
-        print(e1, e2)
+        #print(e1, e2)
 
         self.pub.publish(sig)
 
