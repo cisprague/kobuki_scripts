@@ -47,12 +47,6 @@ class follower(object):
         # distances
         self.d1, self.d2 = 1.114*np.exp(-0.004*s1), 1.114*np.exp(-0.004*s2)
 
-        # orientation
-        #self.mtheta = np.arctan((self.d1 - self.d2)/np.sqrt((self.d1 - self.d2)**2 + self.l**2))
-
-        # distance
-        #self.md = (self.d1 + self.d2)/2
-
     def cb_enc(self, data):
 
         # signals
@@ -61,9 +55,20 @@ class follower(object):
         # estimated velocities
         vw1, vw2 = [2*np.pi*self.r*self.f*s/self.tpr for s in (s1, s2)]
 
-        # desired wheel velocity
-        e1 = self.v - 0.115*float(self.d1 - self.d2) - vw1
-        e2 = self.v + 0.115*float(self.d1 - self.d2) - vw2
+        # error from final translational speed
+        e1, e2 = [self.v - v for v in [vw1, vw2]]
+
+        # error from angle
+        ew = 10*(self.d1 - self.d2)
+        e1 -= ew
+        e2 += ew
+
+        # error from distance
+        d = (self.d1 + self.d2/2)
+        print("Distance to wall: " + str(d))
+        d = 0.5*(self.d - d)
+        e1 += d
+        e2 -= d
 
         # integration error
         self.int1 += e1*0.1
@@ -74,11 +79,7 @@ class follower(object):
         sig.PWM1 = self.kp*e1 + self.ki*self.int1
         sig.PWM2 = self.kp*e2 + self.ki*self.int2
 
-        #print(e1, e2)
-
         self.pub_pwm.publish(sig)
-
-        print(e1, e2)
 
 
 
@@ -86,4 +87,4 @@ class follower(object):
 
 if __name__ == '__main__':
 
-    follower(0.1, 0.5, 10, 0.1)
+    follower(0.9, 0.5, 10, 10)
